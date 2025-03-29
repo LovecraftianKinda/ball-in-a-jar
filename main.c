@@ -1,10 +1,16 @@
 #include "raylib.h"
 #include <stdlib.h>
 #include <time.h>
+#include <math.h>
 
 #define FPS 144
 #define ScreenWidth 1280
 #define ScreenHeight 720
+#define Threshold 200.0f
+#define TextOffset 100
+#define TextSize 30
+#define Text "BOOM!"
+
 typedef struct
 {
     Vector2 BallPosition;
@@ -28,13 +34,14 @@ const double JarHeight = 400;
 const double damping = 0.8f;
 const Vector2 Gravity = {0.0f, +4000.0f};
 Rectangle Jar = {(ScreenWidth - JarWidth) / 2.0f, (ScreenHeight - JarHeight) / 2.0f, JarWidth, JarHeight};
-Vector2 JarVelocity = {0.0f, 0.0f};
+Vector2 JarVelocity = {110.0f, 110.0f};
 
 int main()
 {
     Ball BallA = {{ScreenWidth / 2.0f, ScreenHeight / 2.0f}, {4000.0f, -4000.0f}, 30.0f, RandomColor()};
 
     InitWindow(ScreenWidth, ScreenHeight, "Ball in a jar");
+    InitAudioDevice();
 
     SetTargetFPS(FPS);
     srand(time(NULL));
@@ -72,25 +79,41 @@ void UpdateBall(Ball *Ball, const float DeltaTime)
     {
         Ball->BallPosition.y = JarHeight + Jar.y - Ball->BallRadius - JarThickness;
         Ball->BallVelocity.y = -Ball->BallVelocity.y * damping;
-        Ball->BallColor = RandomColor();
+        if (fabs(Ball->BallVelocity.y - JarVelocity.y) > Threshold)
+        {
+            Ball->BallColor = RandomColor();
+            DrawText(Text, Ball->BallPosition.x, Jar.y + Jar.height + TextSize, TextSize, WHITE);
+        }
     }
     if (Ball->BallPosition.y - Ball->BallRadius - JarThickness < Jar.y)
     {
         Ball->BallPosition.y = Jar.y + Ball->BallRadius + JarThickness;
         Ball->BallVelocity.y = -Ball->BallVelocity.y * damping;
-        Ball->BallColor = RandomColor();
+        if (fabs(Ball->BallVelocity.y - JarVelocity.y) > Threshold)
+        {
+            Ball->BallColor = RandomColor();
+            DrawText(Text, Ball->BallPosition.x, Jar.y - TextSize - TextOffset, TextSize, WHITE);
+        }
     }
     if (Ball->BallPosition.x + Ball->BallRadius + JarThickness > JarWidth + Jar.x)
     {
         Ball->BallPosition.x = JarWidth + Jar.x - Ball->BallRadius - JarThickness;
         Ball->BallVelocity.x = -Ball->BallVelocity.x * damping;
-        Ball->BallColor = RandomColor();
+        if (fabs(Ball->BallVelocity.x - JarVelocity.x) > Threshold)
+        {
+            Ball->BallColor = RandomColor();
+            DrawText(Text, Jar.x + Jar.width + TextSize, Ball->BallPosition.y, TextSize, WHITE);
+        }
     }
     if (Ball->BallPosition.x - Ball->BallRadius - JarThickness < Jar.x)
     {
         Ball->BallPosition.x = Jar.x + Ball->BallRadius + JarThickness;
         Ball->BallVelocity.x = -Ball->BallVelocity.x * damping;
-        Ball->BallColor = RandomColor();
+        if (fabs(Ball->BallVelocity.x - JarVelocity.x) > Threshold)
+        {
+            Ball->BallColor = RandomColor();
+            DrawText(Text, Jar.x - TextSize - TextOffset, Ball->BallPosition.y, TextSize, WHITE);
+        }
     }
 }
 
